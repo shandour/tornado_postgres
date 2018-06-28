@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form id="register-form" method="POST" action="{{request.uri}}">
+  {% module xsrf_form_html() %}
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" class="form-control {% if errors %} is-invalid {% end %}" id="username" placeholder="Jane Doe" name="username">
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" class="form-control {% if errors %} is-invalid {% end %}" id="email" placeholder="example@example.com" name="email">
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" class="form-control {% if errors %} is-invalid {% end %}" id="password" placeholder="Type in your password" name="password">
+  </div>
+  <div class="form-group">
+    <label for="password-confirm">Confirm your password</label>
+    <input type="password" class="form-control {% if errors %} is-invalid {% end %}" id="password" placeholder="Type in your password again" name="password-confirm">
+    {% if errors %}
+    <div class="invalid-feedback">
+      {{''.join(errors)}}
+    </div>
+    {% end %}
+  </div>
+  <button type="submit" class="btn btn-primary">Register</button>
+</form>
+
+{% end %}

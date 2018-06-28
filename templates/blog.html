@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+
+<!-- if the url is /blogs/top -->
+{% if top %}
+<div>
+  {% if entries %}
+  <h3>
+    Behold the best and the worst jumbled together!
+  </h3>
+  {% for e in entries %}
+
+  <div id="top-post">
+    <h3>Written by <a href="/blogs/{{e['blogger_id']}}">{{e['blogger_username']}}</a></h3>
+    Likes:{{e['likes']}} Dislikes:{{e['dislikes']}}
+    {% if e['topic'] %}
+    <h3 class="text-center">{{e['topic']}}</h3>
+    <hr/>
+    {% end %}
+    <div>
+      {% if len(e['text']) > 20 %}
+      {{e['text'][:200]}}
+      <div class="slight-left-margin">
+        <a href="/blogs/{{e['blogger_id']}}/posts/{{e['post_id']}}">
+          Read more...
+        </a>
+      </div>
+      {% else %}
+      {{e['text']}}
+      {% end %}
+    </div>
+  </div>
+  {% end %}
+  {% else %}
+  <div>
+    Sorry! Nothing here yet!
+  </div>
+  {% end %}
+
+</div>
+
+{% else %}
+
+
+
+<!-- if the url is /blogs/current or blogs/id -->
+  <div>
+    {% if current %}
+    Welcome back, <span class="post-username">{{blogger['username']}}</span>!
+
+    <form id="posting-form" method="POST" action="{{request.uri}}">
+      {% module xsrf_form_html() %}
+      <div class="form-group">
+        <label for="topic">Topic</label>
+        <input type="text" class="form-control" id="topic"
+               aria-describedby="topic-help" placeholder="What is the topic of your post?" name="topic">
+        <small id="topic-help" class="form-text text-muted">This field is not required</small>
+      </div>
+      <div class="form-group">
+        <label for="content">Content</label>
+        <textarea class="form-control {% if errors %} is-invalid {% end %}" id="content" placeholder="What is on your mind?" name="content"></textarea>
+        {% if errors %}
+      <div class="invalid-feedback">
+        {{''.join(errors)}}
+      </div>
+      {% end %}
+      </div>
+
+      <button type="submit" class="btn btn-primary">Post</button>
+    </form>
+
+    {% else %}
+    This the glorious <a class="post-username" href="/blogger/{{blogger['id']}}/profile">{{blogger['username']}}</a> 's blog. Read and behave!
+    {% end %}
+  </div>
+
+
+  {% if entries %}
+  <h3 class="text-center" id="posts-list-heading">List of posts</h3>
+  <div id="accordion">
+  {% for e in entries %}
+  <div class="card">
+    <div class="card-header" id="heading-{{e['post_id']}}">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#collapsed-post-{{e['post_id']}}"
+                aria-expanded="false" aria-controls="collapsed-post-{{e['post_id']}}">
+          {{e['topic']}}
+        </button>
+
+        <div class="posts-href">
+          <span class="likes-dislikes-span">
+            <button name="like-btn" id="{{e['post_id']}}" value="like" type="button" class="btn btn-{% if e['liked'] is True %}dark{%else%}light{%end%} likes-dislikes-btn">Likes:</button>
+            <span id="likes-number">{{e['likes']}}</span>
+            <button name="dislike-btn" id="{{e['post_id']}}" value="dislike" type="button" class="btn btn-{% if e['liked'] is False%}dark{%else%}light{%end%} likes-dislikes-btn">Dislikes:</button>
+            <span id="dislikes-number">{{e['dislikes']}}</span>
+          </span>
+          <a href="/blogs/{{blogger['id']}}/posts/{{e['post_id']}}">Go to post</a>
+          {% if current %}
+          <a href="/blogs/{{blogger['id']}}/posts/{{e['post_id']}}/edit" class="posts-edit-href btn btn-secondary" role="button">Edit</a>
+          {% end %}
+        </div>
+      </h5>
+    </div>
+
+    <div id="collapsed-post-{{e['post_id']}}" class="collapse"
+         aria-labelledby="heading-{{e['post_id']}}" data-parent="#accordion">
+      <div class="card-body">
+      {{e['text']}}
+      </div>
+    </div>
+  </div>
+  {% end %}
+  </div>
+  {% else %}
+  <div>
+    Nuff in 'ere y'all. But just you wait!..
+  </div>
+  {% end %}
+</div>
+{% end %}
+
+{% end %}
+
+
+
+
+{% block custom_script %}
+<script src="{{static_url('js/likes_dislikes_handler.js', include_version=False)}}"></script>
+<script>
+
+  var likeBtns = document.getElementsByName('like-btn');
+  var disLikeBtns = document.getElementsByName('dislike-btn');
+
+  for (var likeBtn of likeBtns) {
+    likeBtn.addEventListener('click', function(e) {
+      reactToPost(
+        e,
+        "{{handler.xsrf_token}}");
+      });
+    }
+
+  for (var disLikeBtn of disLikeBtns) {
+    disLikeBtn.addEventListener('click', function(e) {
+     reactToPost(
+        e,
+        "{{handler.xsrf_token}}");
+      });
+  }
+</script>
+{% end %}

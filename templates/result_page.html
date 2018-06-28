@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% if errors %}
+
+<div class="error-div">
+  {{errors}}
+</div>
+
+{% else %}
+
+<div>
+  {% if len(results) == 2 %}
+  <div>
+    <a href="#bloggers" class="a-hrefs">Go to bloggers</a>
+    <a href="#topics" class="a-hrefs">Go to topics</a>
+  </div>
+  {% end %}
+
+  {% for k, v in results.items() %}
+  <h4 id="#{{k}}">{{k.capitalize()}}</h4>
+  {% for itm in v %}
+  <ul class="list-group">
+  {% if k == "bloggers" %}
+  <a href="/blogs/{{itm['id']}}" class="list-group-item list-group-item-action">{{itm['username']}}</a>
+  {% else %}
+  <a href="/blogs/{{itm['blogger_id']}}/posts/{{itm['id']}}" class="list-group-item list-group-item-action">{{itm['topic']}}</a>
+  {% end %}
+  </ul>
+  {% end %}
+  {% end %}
+
+</div>
+
+{% end %}
+
+
+{% end %}

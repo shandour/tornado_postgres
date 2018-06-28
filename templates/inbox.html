@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div>
+  <div>
+    <a href="/inbox/compose">Write a message!</a>
+    </div>
+  {% if messages %}
+  {% module xsrf_form_html() %}
+  {% for m in messages %}
+  {% if int(current_user['user_id']) == m['message_addressee_id'] %}
+  <div class="{% if m['message_unread'] %} unread {% end %} message-box" id="{{m['message_id']}}-div">
+    {% if m['message_unread'] %}
+    <input type="checkbox" name="checkbox" id="{{m['message_id']}}" value="read"><span id="{{m['message_id']}}-text">Mark as read</span>
+    {% else %}
+    <input type="checkbox" name="checkbox" id="{{m['message_id']}}" value="unread"><span id="{{m['message_id']}}-text">Mark as unread</span>
+    {% end %}
+    {% else %}
+    <div class="message-box" id="{{m['message_id']}}-div">
+    {% end %}
+    <h4>Topic: {{m['message_topic']}}</h4>
+        {% if int(current_user['user_id']) == m['message_addressee_id'] %}
+        <div>Received from <a href="/bloggers/{{m['message_author_id']}}">{{m['message_author_username']}}</a></div>
+        <div>Received: {{m['message_sent']}}</div>
+        {% else %}
+        <div>You sent this to <a href="/bloggers/{{m['message_addressee_id']}}">{{m['message_addressee_username']}}</a></div>
+        <div>Sent: {{m['message_sent']}}</div>
+        {% end %}
+        <hr/>
+        <div>
+          {% if len(m['message_text']) < 500 %}
+          {{m['message_text']}}
+          {% else %}
+          {{m['message_text'][:500]}}
+          <div>
+            <a href="/inbox/{{m['message_id']}}">Read more...</a>
+          </div>
+          {% end %}
+        </div>
+  </div>
+  {% end %}
+  {% else %}
+  <h3>No messages!</h3>
+  {% end %}
+</div>
+
+{% end %}
+
+
+
+  {% block custom_script %}
+  {% if int(current_user['user_id']) == m['message_addressee_id'] %}
+<script type="text/javascript">
+  var checkboxes = document.getElementsByName('checkbox');
+  for (var checkbox of checkboxes) {
+    checkbox.addEventListener('input', checkBoxTicked);
+  }
+
+  function checkBoxTicked (e) {
+    var el = e.target;
+    var value = el.value;
+    var id = el.id;
+
+    fetch(('/inbox/'+ id),
+      {method: 'PUT',
+      credentials: 'same-origin',
+      body: new URLSearchParams({"_xsrf": "{{handler.xsrf_token}}",
+                                 "value": value})}).then(
+        resp => {
+          if (resp.ok) {
+            if (value == "read") {
+              el.value = "unread";
+              document.getElementById(id +'-div').className = "message-box";
+              document.getElementById(id +'-text').textContent = 'Mark as unread';
+            } else {
+              el.value = "read";
+              document.getElementById(id + '-div').className = "message-box unread";
+              document.getElementById(id +'-text').textContent = 'Mark as read';
+            }
+            el.checked = false;
+          }
+        });
+  }
+</script>
+{% end %}
+{% end %}

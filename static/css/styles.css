@@ -1,0 +1,115 @@
+#edit-button-right {
+    float: right;
+}
+
+#top-post {
+    border-style: solid;
+    padding: 5px 5px 5px 5px;
+    background-color: #F0FFFF;
+}
+
+#posting-form {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+#posts-list-heading {
+    border-style: double;
+    color: #3399ff;
+    background-color: #ffffcc;
+}
+
+#login-div {
+    margin-right: 20px;
+}
+
+#hello-guest-span {
+    margin-right: 5px;
+}
+
+#created-edited-span {
+    float: right;
+}
+
+#profile-div {
+    border-style: groove
+}
+
+#message-password-div {
+    padding: 15px;
+}
+
+#send-message-btn {
+    margin: 2px;
+}
+
+#chg-message-btn {
+    margin: 2px;
+}
+
+.slight-left-margin {
+    margin-left: 5px;
+}
+
+.post-username {
+    color: red;
+}
+
+.my-footer-div {
+    border-style: double;
+    padding: 2px;
+}
+
+.posts {
+    border-style: dotted;
+    padding: 2px;
+}
+
+.posts-href {
+    float: right;
+}
+
+.posts-edit-href {
+    margin-left: 5px;
+    border: 0px 0px 0px 2px;
+    border-style: solid;
+}
+
+.unread {
+    background-color: blue;
+    color: silver;
+}
+
+.message-box {
+    border: 2px 2px 2px 2px;
+    border-style: solid;
+    margin: 10px 10px 10px 10px;
+    padding: 5px;
+}
+
+.likes-dislikes-span {
+    margin-right: 50px;
+}
+
+.likes-dislikes-btn {
+    margin-left: 10px;
+}
+
+.checkbox-search-option {
+    margin-left: 3px;
+    margin-right: 1px;
+}
+
+.error-div {
+    border: 2px 2px 2px 2px;
+    border-color: red;
+    border-style: solid;
+}
+
+.a-hrefs {
+    margin-right: 15px;
+}
+
+footer {
+    margin-top: 20px;
+}

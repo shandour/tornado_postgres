@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron jumbotron-fluid">
+  <div class="container">
+    <h1 class="display-4">Today's Top Post</h1>
+    <p class="lead">
+      {% if top_blog %}
+      <div>
+        <span>
+          <a class="post-username slight-left-margin" href="/blogs/{{top_blog['blogger_id']}}">{{top_blog['blogger_name']}}</a>
+        </span> wrote:
+      </div>
+      <div id="top-post">
+        Likes:{{top_blog['likes']}} Dislikes:{{top_blog['dislikes']}}
+        {% if top_blog['topic'] %}
+        <h3 class="text-center">{{top_blog['topic']}}</h3>
+        <hr/>
+        {% end %}
+        <div>
+          {% if len(top_blog['text']) > 20 %}
+          {{top_blog['text'][:200]}}
+          <div class="slight-left-margin">
+            <a href="/blogs/{{top_blog['blogger_id']}}/posts/{{top_blog['post_id']}}">
+              Read more...
+            </a>
+          </div>
+          {% else %}
+          {{top_blog['text']}}
+          <div>
+          <a href="/blogs/{{top_blog['blogger_id']}}/posts/{{top_blog['post_id']}}">
+             Go to post...
+          </a>
+          </div>
+          {% end %}
+        </div>
+      </div>
+      {% else %}
+      <div> Nothing today </div>
+      {% end %}
+    </p>
+  </div>
+</div>
+
+
+<div>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ipsum quam, finibus vel enim sed, porta blandit dui. Mauris maximus maximus nisl sed maximus. Suspendisse pulvinar turpis sit amet urna euismod gravida. Donec sed leo id erat condimentum convallis vel ut felis. Suspendisse bibendum dictum risus, sed posuere nisi semper vitae. Duis ornare ultricies nibh, non scelerisque erat tempor id. Mauris facilisis suscipit lobortis. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Ut pharetra leo ac mauris tempor auctor.
+
+Quisque non lacus condimentum, blandit odio vel, tincidunt est. Maecenas efficitur maximus est, et mattis lectus elementum ac. Vestibulum eleifend magna sed ligula vestibulum feugiat. In a est varius, venenatis urna at, accumsan dui. Proin gravida elementum odio vulputate aliquet. Donec a eros nisi. Aliquam sit amet nunc nec arcu tempus pretium non ac massa. Phasellus lacinia aliquam eros, id pharetra dolor tincidunt et. Sed condimentum aliquet tristique. Donec sed nulla id nunc efficitur cursus et tincidunt nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut efficitur ipsum. Fusce volutpat ornare lorem, in posuere orci pharetra sed. Pellentesque ex nulla, viverra in sollicitudin in, ultrices vitae diam. Aliquam erat volutpat.
+
+Donec nec aliquet nunc. Cras pretium leo quis magna venenatis, et sagittis nibh luctus. Nulla eu orci pretium odio sagittis varius. Nam vehicula leo sollicitudin nunc placerat volutpat. Donec blandit eget mi vitae accumsan. Vestibulum placerat sapien neque, ut tincidunt magna pretium a. Nam mi urna, sagittis ac orci eget, ultricies fringilla quam.
+
+Proin nec orci vitae massa porta mollis eu posuere massa. Proin mattis interdum sollicitudin. Ut a nibh vel lacus facilisis iaculis. Aenean auctor sem nisl, eu placerat metus tempus vitae. In nibh nisl, accumsan nec venenatis sed, laoreet ut magna. Integer rhoncus dignissim ipsum vel fermentum. Cras sed pulvinar magna. Sed suscipit diam id nulla molestie malesuada at bibendum purus. Phasellus malesuada non ipsum vitae vestibulum. Mauris euismod elementum ipsum, ut pellentesque nisi bibendum non. Phasellus purus nunc, lobortis at risus nec, dictum imperdiet ligula.
+
+Maecenas eget risus id diam rhoncus pretium non at augue. Nam tristique eleifend mi, blandit consequat nibh mattis eu. Nullam mattis, tellus non rhoncus mollis, nulla enim iaculis lectus, quis blandit elit nunc vitae metus. Nullam placerat interdum turpis, suscipit ornare quam facilisis quis. Vestibulum id quam suscipit, gravida justo ac, efficitur ex. Quisque eget sapien purus. Nam imperdiet mi nulla, eu maximus mi sollicitudin non. Quisque sodales sollicitudin nunc vel vestibulum. Suspendisse mattis, erat vel pellentesque venenatis, ante libero viverra ipsum, non rhoncus tellus sem non sem. Aliquam erat volutpat.
+</div>
+  {% end %}

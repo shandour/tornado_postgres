@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if request.uri.endswith('/edit') %}
+
+<div>
+  <form id="put-form">
+    {% module xsrf_form_html() %}
+    <div class="form-group">
+      <label for="topic">Topic</label>
+      <input type="text"
+             class="form-control"
+             id="topic"
+             aria-describedby="topic-help"
+             placeholder="Change or add a topic"
+             name="topic"
+             value="{{post['topic']}}">
+      <small id="topic-help" class="form-text text-muted">
+        This field is not required
+      </small>
+    </div>
+    <div class="form-group">
+      <label for="content">Content</label>
+      <textarea
+        class="form-control"
+        id="content"
+        placeholder="Rewrite your post as you please?"
+        name="content">
+        {{post['text']}}
+      </textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">
+      Edit
+    </button>
+  </form>
+</div>
+
+
+{% else %}
+{% if current %}
+<a href="/blogs/current/posts/{{post['post_id']}}/edit"
+   class="posts-edit-href btn btn-secondary"
+   id="edit-button-right"
+   role="button">Edit</a>
+{% end %}
+<div>
+  <h3>A post by <a href="
+{% if current %}
+/blogs/current
+{% else %}
+/blogs/{{post['blogger_id']}}
+{% end %}
+">{{post['blogger_username']}}</a></h3>
+    <div id="top-post">
+      <span>
+        <button id="{{post['post_id']}}" name="like-btn" value="like" type="button" class="btn btn-{% if post['liked'] is True %}dark{%else%}light{%end%} likes-dislikes-btn">Likes:</button>
+        <span id="likes-number">{{post['likes']}}</span>
+        <button id="{{post['post_id']}}" name="dislike-btn" value="dislike" type="button" class="btn btn-{% if post['liked'] is False%}dark{%else%}light{%end%} likes-dislikes-btn">Dislikes:</button>
+        <span id="dislikes-number">{{post['dislikes']}}</span>
+      </span>
+      <span id="created-edited-span">Created: {{post['created']}}
+        {% if post['edited'] and post['edited'] != post['created'] %}
+        Edited: {{post['edited']}}
+        {% end %}
+      </span>
+    {% if post['topic'] %}
+    <h3 class="text-center">{{post['topic']}}</h3>
+    <hr/>
+    {% end %}
+    <div>
+      {{post['text']}}
+    </div>
+  </div>
+</div>
+{% end %}
+
+{% end %}
+
+{% block custom_script %}
+  {% if request.uri.endswith('/edit') %}
+<script type="text/javascript">
+
+    var form = document.getElementById('put-form')
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var formBody = {};
+
+      for (var inptFld of form) {
+        if (inptFld.name) {
+          formBody[inptFld.name] = inptFld.value;
+        }
+      }
+
+      var req = new Request("/blogs/{{post['blogger_id']}}/posts/{{post['post_id']}}",
+        {method: "PUT",
+        body: new URLSearchParams(formBody),
+        credentials: "same-origin"});
+
+    fetch(req).then(resp =>{
+          location.href = "/blogs/current/posts/{{post['post_id']}}"
+        });
+    });
+
+</script>
+
+  {% else %}
+
+<script src="{{static_url('js/likes_dislikes_handler.js', include_version=False)}}"></script>
+<script>
+  var likesBtn = document.querySelector("button[id='{{post['post_id']}}'][name='like-btn']");
+  var disLikesBtn = document.querySelector("button[id='{{post['post_id']}}'][name='dislike-btn']");
+  likesBtn.addEventListener('click', function(e) {
+      reactToPost(
+        e,
+        "{{handler.xsrf_token}}");
+    });
+  disLikesBtn.addEventListener('click', function(e) {
+      reactToPost(
+        e,
+        "{{handler.xsrf_token}}");
+    });
+</script>
+
+  {% end %}
+
+{% end %}

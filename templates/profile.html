@@ -1,0 +1,32 @@
+{% extends 'blog.html' %}
+
+{% block content %}
+
+<div id="profile-div">
+  <h3>This is {{blogger['blogger_username']}}'s profile </h3>
+
+  <ul class="list-group">
+  <li class="list-group-item">Email: {{blogger['blogger_email']}}</li>
+  <a class="list-group-item" href="/blogs/{% if current %}current{% else %}{{blogger['blogger_id']}}{% end %}">Back to blog</a>
+  </ul>
+
+  <div id="message-password-div">
+    {% if current %}
+    Bored of your password?
+    <div>
+      <a class="btn btn-primary" role="button" href="/reset">Change password</a>
+      </div>
+    {% else %}
+    Wanna contact this blogger!
+    <div>
+      <a class="btn btn-primary" role="button" href="/inbox/compose">Send message</a>
+    </div>
+    {% end %}
+  </div>
+</div>
+
+
+{% end %}
+
+
+

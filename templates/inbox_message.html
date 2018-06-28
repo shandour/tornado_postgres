@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<a href="/inbox">Back to inbox</a>
+
+<div class="message-box">
+  {% module xsrf_form_html() %}
+  {% if message['message_unread'] %}
+  <input type="checkbox" name="checkbox" id="{{message['message_id']}}" value="read"><span id="{{message['message_id']}}-text">Mark as read</span>
+  {% else %}
+  <input type="checkbox" name="checkbox" id="{{message['message_id']}}" value="unread"><span id="{{message['message_id']}}-text">Mark as unread</span>
+  {% end %}
+  <input type="hidden" id="{{message['message_id']}}-info" value="{% if int(current_user['user_id']) == message['message_addressee_id'] %}addressee{% else %}author{% end %}">
+
+  <h4>Topic: {{message['message_topic']}}</h4>
+  {% if int(current_user['user_id']) == message['message_addressee_id'] %}
+  <div>Received from <a href="/bloggers/{{message['message_author_id']}}">{{message['message_author_username']}}</a></div>
+  <div>Received: {{message['message_sent']}}</div>
+  {% else %}
+  <div>You sent this to <a href="/bloggers/{{message['message_addressee_id']}}">{{message['message_addressee_username']}}</a></div>
+  <div>Sent: {{message['message_sent']}}</div>
+  {% end %}
+  <hr/>
+  <div>
+    {{message['message_text']}}
+  </div>
+</div>
+
+{% end %}
+
+
+{% block custom_script %}
+<script type="text/javascript">
+  var checkboxes = document.getElementsByName('checkbox');
+  var _xsrf_value = document.querySelector('input[name=_xsrf]').value;
+  for (var checkbox of checkboxes) {
+  checkbox.addEventListener('input', checkBoxTicked);
+  }
+
+  function checkBoxTicked (e) {
+    var el = e.target;
+    var value = el.value;
+    var id = el.id;
+    var user_is = document.getElementById(id+'-info').value;
+
+    fetch(('/inbox/'+ id),
+      {method: 'PUT',
+      credentials: 'same-origin',
+      body: new URLSearchParams({"_xsrf": _xsrf_value,
+                                 "value": value,
+                                 "user_is": user_is})}).then(
+        resp => {
+          if (resp.ok) {
+           if (value == "read") {
+              el.value = "unread";
+              document.getElementById(id +'-text').textContent = 'Mark as unread';
+            } else {
+              el.value = "read";
+              document.getElementById(id +'-text').textContent = 'Mark as read';
+            }
+            el.checked = false;
+          }
+        });
+  }
+</script>
+{% end %}
