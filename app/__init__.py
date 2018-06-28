@@ -22,7 +22,7 @@ class Application(web.Application):
             (r'/blogs/([0-9]+|current|top)', BlogHandler),
             (r'/blogs/([0-9]+|current)/posts/([0-9]+)(/edit)*', PostHandler),
             (r'/posts/([0-9])+', LikesDislikesHandler),
-            (r'/blogger/([0-9]+|current)/profile', BloggerHandler),
+            (r'/bloggers/([0-9]+|current)/profile', BloggerHandler),
             (r'/inbox', InboxHandler),
             (r'/inbox/compose', InboxHandler),
             (r'/inbox/([0-9]+)', InboxHandler),

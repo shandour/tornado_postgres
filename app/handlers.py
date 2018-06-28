@@ -472,10 +472,26 @@ class InboxHandler(BaseHandler):
                 where_clause = (messages.c.id == message_id)
                 limit = 1
             else:
-                where_clause = or_(messages.c.author_id == user_id,
+                status = self.get_query_argument('status', None)
+                sentby = self.get_query_argument('sentby', None)
+                
+                if status and sentby:
+                    if sentby == 'others':
+                        if status == 'read':
+                            whr = and_(messages.c.unread == False,
+                                       messages.c.addressee_id == user_id)
+                        elif status == 'unread':
+                            whr = and_(messages.c.unread == True,
+                                       messages.c.addressee_id == user_id)
+                        else:
+                            whr = (messages.c.addressee_id == user_id)
+                    elif sentby == "you":
+                        whr = (messages.c.author_id == user_id)
+                else:
+                        whr = or_(messages.c.author_id == user_id,
                                    messages.c.addressee_id == user_id)
                 limit = None
-
+                
             messages_result = await conn.execute(
                 select([messages.c.id,
                         messages.c.topic,
@@ -486,7 +502,7 @@ class InboxHandler(BaseHandler):
                         messages.c.author_id,
                         messages.c.author_name,
                         messages.c.unread])
-                .where(where_clause)
+                .where(whr)
                 .limit(limit)
                 .order_by(messages.c.sent))
 
@@ -604,7 +620,6 @@ class BloggerHandler(BaseHandler):
         self.render('profile.html', blogger=blogger, current=current)
 
 
-# TO DO: search results; add a checkbox what to search: bloggers or topics;
 class SearchHandler(BaseHandler):
     async def get(self):
         opts = self.get_query_arguments('option', None)

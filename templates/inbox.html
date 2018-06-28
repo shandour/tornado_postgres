@@ -5,7 +5,29 @@
 <div>
   <div>
     <a href="/inbox/compose">Write a message!</a>
+  </div>
+   <form action="{{request.uri}}">
+    <div class="row">
+      <div class="col">
+	<label for="select-read-unread">Sort by status (only if sent to you option is selected)</label>
+	<select style="display:none"  name="status" class="form-control" id="select-read-unread">
+	  <option value="all">All</option>
+	  <option value="read">Read</option>
+	  <option value="unread">Unread</option>
+	</select>
+      </div>
+      <div class="col">
+	<label for="select-send-direction">Sort by author/addressee</label>
+	<select name="sentby" class="form-control" id="select-send-direction">
+	  <option value="all">All</option>
+	  <option value="others">Sent to you</option>
+	  <option value="you">Sent by you</option>
+	</select>
+      </div>
+      <button type="submit" class="btn-small">Sort</button>
     </div>
+    </form>
+ 
   {% if messages %}
   {% module xsrf_form_html() %}
   {% for m in messages %}
@@ -24,7 +46,7 @@
         <div>Received from <a href="/bloggers/{{m['message_author_id']}}">{{m['message_author_username']}}</a></div>
         <div>Received: {{m['message_sent']}}</div>
         {% else %}
-        <div>You sent this to <a href="/bloggers/{{m['message_addressee_id']}}">{{m['message_addressee_username']}}</a></div>
+        <div>You sent this to <a href="/bloggers/{{m['message_addressee_id']}}/profile">{{m['message_addressee_username']}}</a></div>
         <div>Sent: {{m['message_sent']}}</div>
         {% end %}
         <hr/>
@@ -50,7 +72,6 @@
 
 
   {% block custom_script %}
-  {% if int(current_user['user_id']) == m['message_addressee_id'] %}
 <script type="text/javascript">
   var checkboxes = document.getElementsByName('checkbox');
   for (var checkbox of checkboxes) {
@@ -82,6 +103,18 @@
           }
         });
   }
+
+
+  var selectSendDirection = document.getElementById('select-send-direction');
+  var selectStatus = document.getElementById('select-read-unread');
+  selectSendDirection.addEventListener('change', function(e) {
+    var val = e.target.value;
+    if (val == 'others') {
+      selectStatus.style.display = 'block';
+    } else {
+      selectStatus.style.display = 'none';
+    }	    
+  });
+	    
 </script>
-{% end %}
 {% end %}
