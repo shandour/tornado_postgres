@@ -149,7 +149,7 @@ class BlogHandler(BaseHandler):
             for k, v in self.request.body_arguments.items()
             if not k == "_xsrf"
         }
-
+        import ipdb; ipdb.set_trace()
         if not update_dict['content']:
             blogger_id = int(self.current_user['user_id'])
             blogger_username = self.current_user['username'].decode('utf-8')

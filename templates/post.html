@@ -55,9 +55,9 @@
     <div id="top-post">
       <span>
         <button id="{{post['post_id']}}" name="like-btn" value="like" type="button" class="btn btn-{% if post['liked'] is True %}dark{%else%}light{%end%} likes-dislikes-btn">Likes:</button>
-        <span id="likes-number">{{post['likes']}}</span>
+        <span id="likes-number-{{post['post_id']}}">{{post['likes']}}</span>
         <button id="{{post['post_id']}}" name="dislike-btn" value="dislike" type="button" class="btn btn-{% if post['liked'] is False%}dark{%else%}light{%end%} likes-dislikes-btn">Dislikes:</button>
-        <span id="dislikes-number">{{post['dislikes']}}</span>
+        <span id="dislikes-number-{{post['post_id']}}">{{post['dislikes']}}</span>
       </span>
       <span id="created-edited-span">Created: {{post['created']}}
         {% if post['edited'] and post['edited'] != post['created'] %}

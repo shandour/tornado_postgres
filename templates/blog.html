@@ -87,15 +87,19 @@
       <h5 class="mb-0">
         <button class="btn btn-link" data-toggle="collapse" data-target="#collapsed-post-{{e['post_id']}}"
                 aria-expanded="false" aria-controls="collapsed-post-{{e['post_id']}}">
-          {{e['topic']}}
+	  {% if e['topic'] %}
+	  {{e['topic']}}
+	  {% else %}
+	  ***
+	  {% end %}
         </button>
 
         <div class="posts-href">
           <span class="likes-dislikes-span">
             <button name="like-btn" id="{{e['post_id']}}" value="like" type="button" class="btn btn-{% if e['liked'] is True %}dark{%else%}light{%end%} likes-dislikes-btn">Likes:</button>
-            <span id="likes-number">{{e['likes']}}</span>
+            <span id="likes-number-{{e['post_id']}}">{{e['likes']}}</span>
             <button name="dislike-btn" id="{{e['post_id']}}" value="dislike" type="button" class="btn btn-{% if e['liked'] is False%}dark{%else%}light{%end%} likes-dislikes-btn">Dislikes:</button>
-            <span id="dislikes-number">{{e['dislikes']}}</span>
+            <span id="dislikes-number-{{e['post_id']}}">{{e['dislikes']}}</span>
           </span>
           <a href="/blogs/{{blogger['id']}}/posts/{{e['post_id']}}">Go to post</a>
           {% if current %}

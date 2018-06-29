@@ -3,6 +3,7 @@
 
 function reactToPost(e, _xsrf_token) {
     var btn = e.target;
+    console.log(btn)
     var attitude = btn.value;
 
     var req = new Request((`/posts/${btn.id}?attitude=${attitude}`),
@@ -17,11 +18,11 @@ function reactToPost(e, _xsrf_token) {
             throw res.status;
         }
     }).then(jsn => {
-        var likesNumElement = document.getElementById('likes-number');
+        var likesNumElement = document.getElementById(`likes-number-${btn.id}`);
         var numLikes = Number(likesNumElement.textContent);
         likesNumElement.textContent = numLikes + jsn['likes'];
 
-        var disLikesNumElement = document.getElementById('dislikes-number');
+        var disLikesNumElement = document.getElementById(`dislikes-number-${btn.id}`);
         var numDisLikes = Number(disLikesNumElement.textContent);
         disLikesNumElement.textContent = numDisLikes + jsn['dislikes'];
 

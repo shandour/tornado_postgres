@@ -2,3 +2,4 @@ SQLAlchemy==1.2.8
 tornado==5.0.2
 aiopg==0.14.0
 psycopg2==2.7.4
+marshmallow-2.15.3
