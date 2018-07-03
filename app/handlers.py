@@ -6,6 +6,12 @@ from sqlalchemy import select, desc, and_, or_
 from aiopg.sa import create_engine
 
 from .db import bloggers, posts, messages, likes_dislikes
+from .marshmallow_schemata import (
+    PostSchema,
+    LoginSchema,
+    RegisterSchema,
+    MessageSchema,
+    SearchSchema)
 
 
 class BaseHandler(web.RequestHandler):
@@ -137,20 +143,17 @@ class BlogHandler(BaseHandler):
                         blogger=blogger,
                         current=current,
                         top=top,
-                        errors=None)
+                        errors={})
 
     @web.authenticated
     async def post(self, blogger_id):
         if not blogger_id == "current":
             raise HTTPError(403)
-        engine = await self._get_engine()
-        update_dict = {
-            k: v[0].decode('UTF-8').strip()
-            for k, v in self.request.body_arguments.items()
-            if not k == "_xsrf"
-        }
-        import ipdb; ipdb.set_trace()
-        if not update_dict['content']:
+
+        update_dict, errors = PostSchema().load(
+            {k: v[0] for k, v in self.request.body_arguments.items()})
+
+        if errors:
             blogger_id = int(self.current_user['user_id'])
             blogger_username = self.current_user['username'].decode('utf-8')
             entries = await self._get_entries(blogger_id)
@@ -160,9 +163,10 @@ class BlogHandler(BaseHandler):
                         blogger=blogger,
                         current=True,
                         top=False,
-                        errors="Please fill in the content field")
+                        errors=errors)
             return
 
+        engine = await self._get_engine()
         async with engine.acquire() as conn:
             await conn.execute(
                 posts
@@ -236,11 +240,14 @@ class PostHandler(BaseHandler):
         elif not blogger_id == int(self.current_user['user_id']):
                 raise web.HTTPError(403)
 
-        update_dict = {
-            k: v[0].decode('UTF-8')
-            for k, v in self.request.body_arguments.items()
-            if not k == "_xsrf"
-        }
+        update_dict, errors = PostSchema().load(
+           {k: v[0] for k, v in self.request.body_arguments.items()})
+
+        if errors:
+            self.clear()
+            self.set_status(400)
+            self.finish(errors)
+            return
 
         engine = await self._get_engine()
 
@@ -261,7 +268,7 @@ class LikesDislikesHandler(BaseHandler):
     async def put(self, post_id):
         attitude = self.get_query_argument('attitude', None)
 
-        if attitude:
+        if attitude in ['like', 'dislike']:
             new_attitude_dct = await self._calculate_reaction(
                 attitude, post_id)
             self.clear()
@@ -390,22 +397,30 @@ class LoginHandler(BaseHandler):
     def get(self):
         if self.current_user:
             self.redirect('/')
-        self.render('login.html', errors=None)
+        self.render('login.html', errors={})
 
     async def post(self):
+        data, errors = LoginSchema().load(
+            {k: v[0] for k, v in self.request.body_arguments.items()})
+        if errors:
+            self.render('login.html',
+                        errors=errors)
+
         engine = await self._get_engine()
         async with engine.acquire() as conn:
             blogger = await conn.execute(
                 select([bloggers.c.id, bloggers.c.username])
-                .where((bloggers.c.email == self.get_argument('email')) &
-                       (bloggers.c.password == self.get_argument('password'))))
+                .where((bloggers.c.email == data['email']) &
+                       (bloggers.c.password == data['password'])))
             blogger = await blogger.fetchone()
             if blogger:
                 self._add_user_cookie_and_redirect(str(blogger[0]),
                                                    str(blogger[1]))
             else:
                 self.render('login.html',
-                            errors='email or password do not match')
+                            errors={
+                                'password': ['Password or email incorrect'],
+                                'email': ['Password or email incorrect']})
 
 
 class LogoutHandler(BaseHandler):
@@ -417,27 +432,14 @@ class LogoutHandler(BaseHandler):
 
 class RegisterHandler(BaseHandler):
     def get(self):
-        self.render('register.html', errors=None)
+        self.render('register.html', errors={}, data={})
 
     async def post(self):
-        form_args = {
-            'username': self.get_argument('username', ''),
-            'email': self.get_argument('email', ''),
-            'password': self.get_argument('password', ''),
-            'confirm password': self.get_argument(
-                'password-confirm', '')
-        }
-        errors = []
-
-        for k, v in form_args.items():
-            if not v.strip():
-                errors.append('{} not provided. '.format(k.capitalize()))
-
-        if form_args['password'] != form_args['confirm password']:
-            errors.append('The passwords do not match.')
+        data, errors = RegisterSchema().load(
+            {k: v[0] for k, v in self.request.body_arguments.items()})
 
         if errors:
-            self.render('register.html', errors=errors)
+            self.render('register.html', errors=errors, data=data)
             return
 
         engine = await self._get_engine()
@@ -445,9 +447,9 @@ class RegisterHandler(BaseHandler):
         async with engine.acquire() as conn:
             blogger_register_result = await conn.execute(
                 bloggers.insert().values(
-                    username=form_args['username'],
-                    email=form_args['email'],
-                    password=form_args['password'])
+                    username=data['username'],
+                    email=data['email'],
+                    password=data['password'])
                 .returning(bloggers.c.id, bloggers.c.username))
 
             blogger_username_id = await blogger_register_result.fetchone()
@@ -489,9 +491,9 @@ class InboxHandler(BaseHandler):
                         whr = (messages.c.author_id == user_id)
                 else:
                         whr = or_(messages.c.author_id == user_id,
-                                   messages.c.addressee_id == user_id)
+                                  messages.c.addressee_id == user_id)
                 limit = None
-                
+
             messages_result = await conn.execute(
                 select([messages.c.id,
                         messages.c.topic,
@@ -528,34 +530,22 @@ class InboxHandler(BaseHandler):
         if not self.request.uri.endswith('/compose'):
             raise web.HTTPError(400)
 
-        message_dict = {}
-        for k, v in self.request.arguments.items():
-            if k == "_xsrf":
-                continue
-            message_dict[k] = (v[0].decode('utf-8')).strip().lower()
-
-        errors = []
-        if not message_dict['addressee']:
-            errors.append('Addressee not provided')
-        if not message_dict['content']:
-            errors.append('Content not provided')
+        data, errors = MessageSchema().load(
+            {k: v[0] for k, v in self.request.body_arguments.items()})
         if errors:
-            self.render('compose_message.html', errors=errors)
+            self.render('compose_message.html', errors=errors, data=data)
             return
 
         engine = await self._get_engine()
 
         async with engine.acquire() as conn:
+            bloggers_clmn = (bloggers.c.email
+                             if '@' and '.' in data['addressee']
+                             else bloggers.c.username)
             addressee_result = await conn.execute(
                 select([bloggers.c.id, bloggers.c.username])
-                .where(or_(bloggers.c.username == message_dict['addressee'],
-                           bloggers.c.email == message_dict['addressee'])))
-
+                .where(bloggers_clmn == data['addressee']))
             a = await addressee_result.fetchone()
-            if not a:
-                errors.append('Incorrect addressee')
-                self.render('compose_message.html', errors=errors)
-                return
 
             addressee = {'user_id': a[0], 'username': a[1]}
 
@@ -622,35 +612,24 @@ class BloggerHandler(BaseHandler):
 
 class SearchHandler(BaseHandler):
     async def get(self):
-        opts = self.get_query_arguments('option', None)
-        query = self.get_query_argument('query', None)
-
         bloggers_flag = topics_flag = False
+        data, errors = SearchSchema().load({
+            'option': self.get_query_arguments('option'),
+            'query': self.get_query_argument('query')
+        })
 
-        if not query:
+        if errors:
             self.render('result_page.html',
                         results=None,
-                        errors="No results. Please, specify the search query.")
+                        errors=errors)
             return
-        else:
-            query = query.strip()
 
-        if not opts or len(opts) > 2:
-            self.render('result_page.html',
-                        results=None,
-                        errors=("No results."
-                                "Please, specify the search condition."))
-        elif len(opts) == 2 and ('bloggers' in opts and 'topics' in opts):
+        if len(data['option']) == 2:
             bloggers_flag = topics_flag = True
-        elif opts[0] == 'bloggers':
+        elif data['option'] == 'bloggers':
             bloggers_flag = True
-        elif opts[0] == 'topics':
+        elif data['option'] == 'topics':
             topics_flag = True
-        else:
-            self.render('result_page.html',
-                        results=None,
-                        errors=("No results. Invalid search condition."
-                                "Choose between bloggers and post topics"))
 
         engine = await self._get_engine()
 

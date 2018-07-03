@@ -19,6 +19,8 @@
       <small id="topic-help" class="form-text text-muted">
         This field is not required
       </small>
+        <div class="invalid-feedback" id="invalid-feedback-topic">
+        </div>
     </div>
     <div class="form-group">
       <label for="content">Content</label>
@@ -29,6 +31,8 @@
         name="content">
         {{post['text']}}
       </textarea>
+      <div class="invalid-feedback" id="invalid-feedback-content">
+      </div>
     </div>
     <button type="submit" class="btn btn-primary">
       Edit
@@ -98,8 +102,30 @@
         credentials: "same-origin"});
 
     fetch(req).then(resp =>{
-          location.href = "/blogs/current/posts/{{post['post_id']}}"
-        });
+          if (resp.ok) { 
+            location.href = "/blogs/current/posts/{{post['post_id']}}";
+          } else {
+            return resp.json().then(jsn => {
+               var errors = jsn;
+               if (errors.hasOwnProperty("topic")) {
+                 document.getElementById("invalid-feedback-topic").textContent = errors["topic"].join();
+                 document.getElementById("topic").className = "form-control is-invalid";
+               } else {
+                 document.getElementById("invalid-feedback-topic").textContent = "";
+                  document.getElementById("topic").className = "form-control";
+               }
+
+               if (errors.hasOwnProperty("content")) {
+                 document.getElementById("invalid-feedback-content").textContent = errors["content"].join();
+                 document.getElementById("content").className = "form-control is-invalid";
+               } else {
+                 document.getElementById("invalid-feedback-content").textContent = "";
+                 document.getElementById("content").className = "form-control";
+               }
+             });
+           }
+    });
+
     });
 
 </script>

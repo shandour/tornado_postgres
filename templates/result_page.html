@@ -5,7 +5,10 @@
 {% if errors %}
 
 <div class="error-div">
-  {{errors}}
+{% for e in errors.values() %}
+<div>{{''.join(e)}}</div>
+<hr/>
+{% end %}
 </div>
 
 {% else %}

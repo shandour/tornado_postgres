@@ -6,22 +6,37 @@
   {% module xsrf_form_html() %}
   <div class="form-group">
     <label for="username">Username</label>
-    <input type="text" class="form-control {% if errors %} is-invalid {% end %}" id="username" placeholder="Jane Doe" name="username">
+    <input type="text" class="form-control {% if errors.get('username') %} is-invalid {% end %}" id="username" placeholder="Jane Doe" name="username" value="{{data.get('username', '')}}">
+    {% if errors.get('username') %}
+    <div class="invalid-feedback">
+      {{''.join(errors['username'])}}
+    </div>
+    {% end %}
   </div>
   <div class="form-group">
     <label for="email">Email</label>
-    <input type="email" class="form-control {% if errors %} is-invalid {% end %}" id="email" placeholder="example@example.com" name="email">
+    <input type="email" class="form-control {% if errors.get('email') %} is-invalid {% end %}" id="email" placeholder="example@example.com" name="email" value="{{data.get('email', '')}}">
+    {% if errors.get('email') %}
+    <div class="invalid-feedback">
+      {{''.join(errors['email'])}}
+    </div>
+    {% end %}
   </div>
   <div class="form-group">
     <label for="password">Password</label>
-    <input type="password" class="form-control {% if errors %} is-invalid {% end %}" id="password" placeholder="Type in your password" name="password">
+    <input type="password" class="form-control {% if errors.get('password') %} is-invalid {% end %}" id="password" placeholder="Type in your password" name="password">
+    {% if errors.get('password') %}
+    <div class="invalid-feedback">
+      {{''.join(errors['password'])}}
+    </div>
+    {% end %}
   </div>
   <div class="form-group">
-    <label for="password-confirm">Confirm your password</label>
-    <input type="password" class="form-control {% if errors %} is-invalid {% end %}" id="password" placeholder="Type in your password again" name="password-confirm">
-    {% if errors %}
+    <label for="confirm_password">Confirm your password</label>
+    <input type="password" class="form-control {% if errors.get('confirm_password') %} is-invalid {% end %}" id="password" placeholder="Type in your password again" name="confirm_password">
+    {% if errors.get('confirm_password') %}
     <div class="invalid-feedback">
-      {{''.join(errors)}}
+      {{''.join(errors['confirm_password'])}}
     </div>
     {% end %}
   </div>
