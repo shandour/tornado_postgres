@@ -1,5 +1,4 @@
-A simplistic blog application, using Tornado, aiopg and aiopg.sa.
-(as of yet unfinished)
+A simplistic blog application, using Tornado, aiopg and aiopg.sa, and Marshmallow.
 
 The 2 relevant entities are Bloggers and Posts. Bloggers can write/edit posts, like/dislikes posts, write messages to other bloggers and receive messages addressed to them.
 
